@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang = "en">
+<meta charset="utf-8">
+<script src="../lib/d3.v3.min.js"></script>
+<style>
+
+.bar{
+	fill:#707070;
+}
+.bar1{
+	fill:#00BFFF;
+}
+.axis {
+    font-size: 18px;
+    fill:#707070;
+}
+
+.label {
+    font-size: 16px;
+    fill:white;
+
+}
+.label1 {
+    font-size: 14px;
+    fill:white;
+
+}
+.title{
+	font-size: 18px;
+    fill:#707070;
+}
+</style>
+<body>
+<div id = "mytable"></div>
+<script>
+
+var data = [{product:'Product A',freq:{Q1:576, Q2:1176, Q3:1009, Q4:494}},
+{product:'Product B',freq:{Q1:959, Q2:1653, Q3:1999, Q4:697}},
+{product:'Product C',freq:{Q1:3210, Q2:4220, Q3:1648, Q4:919}},
+{product:'Product D',freq:{Q1:589, Q2:2043, Q3:1153, Q4:911}},
+{product:'Product E',freq:{Q1:2599, Q2:1333, Q3:818, Q4:1713}},
+{product:'Product F',freq:{Q1:431, Q2:324, Q3:715, Q4:421}},
+{product:'Product G',freq:{Q1:1457, Q2:2557, Q3:2245, Q4:762}},
+{product:'Product H',freq:{Q1:2573, Q2:3357, Q3:1598, Q4:1287}}];
+
+
+console.log(data);
+
+var margin = {top:20,right:20,bottom:20,left:100};
+var width = 800-margin.left-margin.right;
+var height = 600-margin.top-margin.bottom;
+
+
+
+var svg = d3.select("#mytable").append("svg")
+	.attr("width",width+margin.left+margin.right)
+	.attr("height",height+margin.top+margin.bottom)
+	.append("g")
+	.attr("transform","translate("+margin.left+","+margin.top+")")
+	.attr("id", "svg1");
+
+var x = d3.scale.linear()
+	.range([0,width])
+	.domain([0,d3.max(data,function(d){
+		return d.freq.Q1+d.freq.Q2+d.freq.Q3+d.freq.Q4;
+	})]);
+
+var y = d3.scale.ordinal()
+	.rangeRoundBands([0,height], .1)
+	.domain(data.map(function(d){
+		return d.product;
+	}));
+
+var yAxis = d3.svg.axis()
+	.scale(y)
+	.tickSize(0)
+	.orient("left");
+
+var namey = svg.append("g")
+	.attr("class","y axis")
+	.call(yAxis);
+
+var bars = svg.selectAll(".bar")
+.data(data)
+.enter()
+.append("g");
+
+bars.append("rect")
+.attr("class","bar")
+.attr("y",function(d){
+	return y(d.product);
+}) 
+.attr("height",y.rangeBand())
+.attr("x",0)
+.attr("width",function(d){
+	return x(d.freq.Q1+d.freq.Q2+d.freq.Q3+d.freq.Q4);
+})
+.on("mouseover",function(d){
+      d3.select(this)
+        .style('fill', '#00BFFF');
+
+var q1 = d.freq.Q1;
+var q2 = d.freq.Q2;
+var q3 = d.freq.Q3;
+var q4 = d.freq.Q4;
+
+
+
+mousehover(q1,q2,q3,q4);
+})
+.on("mouseout",function(d){
+	d3.select("#svg2").remove();
+	d3.select(this)
+        .style('fill', '#707070');
+});
+
+var namey = svg.append("g")
+	.attr("class","y axis")
+	.call(yAxis);
+
+
+
+bars.append("text")
+.attr("class","label")
+.attr("y",function(d){
+	return y(d.product)+y.rangeBand()/2+2;
+})
+.attr("x",0)
+.text(function(d){
+	var sum = d.freq.Q1+d.freq.Q2+d.freq.Q3+d.freq.Q4;
+	return "$"+sum;
+});
+
+
+
+
+
+
+
+
+
+function mousehover(q1,q2,q3,q4){
+	d3.select("#svg2").remove();
+
+	var q =[q1,q2,q3,q4]; 
+	var xmax = d3.max(q);
+
+	Q1 = new Object();
+	Q1.name = "Q1";
+	Q1.value = q1;
+	Q2 = new Object();
+	Q2.name = "Q2";
+	Q2.value = q2;
+	Q3 = new Object();
+	Q3.name = "Q3";
+	Q3.value = q3;
+	Q4 = new Object();
+	Q4.name = "Q4";
+	Q4.value = q4;
+
+	dataset = [];
+	dataset.push(Q1);
+	dataset.push(Q2);
+	dataset.push(Q3);
+	dataset.push(Q4);
+	var	margin1 = {top: 20, right: 5, bottom: 510, left: 25},
+	width1 = 280 - margin1.left - margin1.right,
+	height1 = 610 - margin1.top - margin1.bottom;
+
+
+	var schart = d3.select("#mytable")
+	.append("svg")
+	.attr("transform","translate("+margin1.left+","+margin1.top+")") 
+	.attr("id","svg2");
+
+		var x1 = d3.scale.linear()
+	.range([0,width1])
+	.domain([0,xmax]);
+
+	var y1 = d3.scale.ordinal()
+	.rangeRoundBands([50,50+height1], .1)
+	.domain(dataset.map(function(d){
+		return d.name;
+	}));
+
+	var yAxis1 = d3.svg.axis()
+	.scale(y1)
+	.tickSize(0)
+	.orient("left");
+
+	var namey = schart.append("g")
+	.attr("class","y axis")
+	.call(yAxis1); 
+
+
+	schart.style("position","absolute")
+		.append("g")
+        .attr("width","20%")
+        .attr("height","120%")
+
+	var bars1 = schart.selectAll(".bar1")
+	.data(dataset)
+	.enter()
+	.append("g")
+
+
+	bars1.append("rect")
+	.attr("class","bar1")
+	.attr("y",function(d){
+		return y1(d.name);
+	}) 
+	.attr("height",y1.rangeBand())
+	.attr("x",0)
+	.attr("width",function(d){
+		return x1(d.value);
+	});
+
+bars1.append("text")
+.attr("class","label1")
+.attr("y",function(d){
+	return y1(d.name)+y1.rangeBand()/2+2;
+})
+.attr("x",0)
+.text(function(d){
+	var sum = d.value;
+	return "$"+sum;
+});
+
+}
+
+</script>
+</body>
+</html>

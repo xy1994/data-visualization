@@ -1,0 +1,3 @@
+I compute radius of node using r = sqrt(20*d-11), where d is the degree of the node.
+
+The method can transfrom the degree in a reasonable scale combining linear and square root methods, which brings good visualization. 

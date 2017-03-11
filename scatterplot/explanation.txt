@@ -1,0 +1,7 @@
+We want to use log scales in charts when:
+
+1. We want to transform a large scale of statistics to a smaller and more reasonable scale
+
+2. We want to avoid the effect of outliers in scatterplots
+
+3. We want to visualize the mulitiplicative factors more clearly 

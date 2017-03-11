@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang = "en">
+<meta charset="utf-8">
+<script src="../lib/d3.v3.min.js"></script>
+<style>
+body {
+  font: 12px sans-serif;
+}
+.label {
+  font-weight: bold;
+}
+
+.tile {
+  shape-rendering: crispEdges;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+div.layout
+{
+  text-align: center;
+}
+</style>
+<body>
+<h1><center>Water Usage Heatmap</center></h1>
+<script>
+
+var SelectValue = "90077";
+
+newmap(SelectValue);
+
+var dataset = ["90077", "90094", "90210","90212","90230","90232","90247"];
+
+  var select = d3.select('body')
+  .append('div')
+  .attr('class','layout')
+  .append('select')
+  	.attr('class','select')
+    .on('change',onchange);
+
+
+var options = select
+  .selectAll('option')
+	.data(dataset).enter()
+	.append('option')
+		.text(function (d) { return d; });
+
+function onchange() {
+	SelectValue = d3.select('select').property('value');
+	d3.select("svg").remove();
+	newmap(SelectValue); 
+}
+
+
+
+function newmap(SelectValue) {
+	d3.csv("heatmap.csv",function(csvdata){
+
+
+    		var len = csvdata.length;
+    		var finaldata = [];
+    		var datax = [];
+    		var dataz = [];
+    		var datay = [];
+
+    		for(var i = 0;i<len;i++){
+    			var temp = csvdata[i];
+    			var zipcode = temp["Zip Code"];
+    			if(zipcode == SelectValue){
+    				var thedata = [];
+    				thedata.push(parseInt(temp["Month"]));
+    				datax.push(parseInt(temp["Month"]))
+    				thedata.push(parseInt(temp["Year"]));
+    				datay.push(parseInt(temp["Year"]));
+    				thedata.push(parseInt(temp["Power"]));
+    				dataz.push(parseInt(temp["Power"]));
+    				finaldata.push(thedata);
+    			}
+    		}
+    		//console.log(datax);
+    		//console.log(datay);
+    		//console.log(dataz);
+
+    			var margin = {top: 20, right: 150, bottom: 30, left: 90},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom,
+    gridSize1 = Math.floor(width / 12);
+    gridSize2 = Math.floor(height / 9);
+
+    var svg = d3.select("body")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  	.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
+
+
+
+
+
+
+                var x = d3.scale.linear().range([0, width]),
+                y = d3.scale.linear().range([height-height/12, 0]),
+                z = d3.scale.linear().range(["#ffe6e6", "#ff0000"]);
+
+        x.domain(d3.extent(datax, function(d) { return d; }));
+        y.domain(d3.extent(datay, function(d) { return d; }));
+        z.domain(d3.extent(dataz, function(d) { return d; }));
+
+
+                svg.selectAll(".tile")
+                .data(finaldata)
+                .enter().append("rect")
+                .attr("class", "tile")
+                .attr("x", function(d) { return x(d[0])-25; })
+                .attr("y", function(d) { return y(d[1])-12; })
+                .attr("width", width/12)
+                .attr("height",   height/9)
+                .style("fill", function(d) { return z(d[2]); }); 
+
+
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + (height) + ")")
+                .call(d3.svg.axis().scale(x).tickFormat(function(d) { 
+                var month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"];
+                return month[d-1];
+            }).orient("bottom"))
+                .append("text")
+                .attr("class", "label")
+                .attr("x", width+45)
+                .attr("y", 10)
+                .attr("text-anchor", "end")
+                .text("Month");
+
+        svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(-30,0" + ")")
+                .call(d3.svg.axis().scale(y).orient("left"))
+                .append("text")
+                .attr("class", "label")
+                .attr("y", -15)
+                .attr("x",5)
+                .attr("dy", "0.71em")
+                .attr("text-anchor", "end")
+                .text("Year");
+
+        var legend = svg.selectAll(".legend")
+      .data(z.ticks(6).slice(0).reverse())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(" + (width + 70) + "," + (20 + i * 20) + ")"; });
+
+  legend.append("rect")
+      .attr("width", 18)
+      .attr("height", 18)
+      .attr("dy", ".80em")
+      .style("fill", z);
+
+  legend.append("text")
+      .attr("x", 26)
+      .attr("y", 10)
+      .attr("dy", ".30em")
+      .text(String);
+
+  svg.append("text")
+      .attr("class", "label")
+      .attr("x", width + 80)
+      .attr("y", 10)
+      .attr("dy", ".35em")
+      .text("kWh");
+
+
+      
+
+ 
+
+	})}
+
+
+
+
+</script>
+</body>
+</html>

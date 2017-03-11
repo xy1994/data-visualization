@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang = "en">
+<meta charset="utf-8">
+<style>
+.states {
+	stroke: black;
+	stroke-width:1.5px;
+}
+
+.d3-tip {   
+  position: absolute;           
+  text-align: center;           
+  width: 400px;                  
+  height: 100px;                 
+  padding: 2px;             
+  font: 12px sans-serif;  
+  font-weight: 900;
+  color: white;    
+  background: black;   
+  border: 0px;      
+  border-radius: 8px;           
+  pointer-events: none;         
+}
+
+</style>
+<body>
+<h1 align="center">Median Earnings by State</h1>
+<script src="../lib/d3.v3.min.js"></script>
+<script src="../lib/d3-queue.v3.min.js"></script>
+<script src="../lib/topojson.v1.min.js"></script>
+<script src="../lib/d3.tip.v0.6.3.js"></script>
+<script>
+
+var width = 1100;
+var height = 700;
+
+var svg = d3.select('body').append('svg')
+.attr('width',width)
+.attr('height',height)
+
+var projection = d3.geo.albersUsa()
+.scale(1200)
+.translate([0,0]);
+
+var path = d3.geo.path()
+.projection(projection);
+
+var g = svg.append("g")
+.attr("transform","translate("+width/2+","+(height/2-50)+")")
+.append("g")
+.attr("id","states");
+
+d3.queue()
+.defer(d3.csv,"sat_scores.csv")
+.defer(d3.json,"us.json")
+.defer(d3.json,"median_earnings.json")
+.await(createchart);
+
+function createchart(error,sat_scores,us,median_earnings){
+	console.log(sat_scores);
+	console.log(us);
+	console.log(median_earnings);
+	var data_earn = median_earnings;
+	var min = median_earnings[0].median_earnings;
+	var max = median_earnings[0].median_earnings;
+	for(var i = 0;i<median_earnings.length;i++){
+		if(median_earnings[i].median_earnings>max){
+			max = median_earnings[i].median_earnings;
+		}
+		if(median_earnings[i].median_earnings<min && median_earnings[i].median_earnings>=15000){
+			min = median_earnings[i].median_earnings;
+		}
+	}
+
+
+	var median_sorted = new Array(median_earnings.length);
+	for(var i = 0;i<median_earnings.length;i++){
+		median_sorted[median_earnings[i].id-1] = median_earnings[i];
+	}
+	var median_specific = [];
+	for(var i = 0;i<median_sorted.length;i++){
+		if(median_sorted[i]){
+			median_specific.push(median_sorted[i]);
+		}
+	} 
+
+
+
+
+	var mincolor = "#87FC87";
+	var maxcolor = "#005000";
+	var color = d3.scale.linear().domain([min,max]).range([mincolor,maxcolor]);
+
+	var tip = d3.tip()
+	.attr('class','d3-tip')
+	.offset([-10,0])
+	.html(function(d){
+		return colleges(d.id,sat_scores);
+	});
+
+	svg.call(tip);
+
+
+	var states = g.selectAll("path")
+	.data(topojson.feature(us, us.objects.states).features)
+	.enter().append("path")
+	.attr('d',path)
+	.attr("class","states");
+
+
+
+	var s = g.selectAll("path")
+	.data(median_specific)
+	.style("fill",function(d){
+		var money = 0;
+		if(d.median_earnings<=15000){
+		money = 15000;
+	}
+		else{
+			money = d.median_earnings;
+		}
+		return color(money);
+	})
+	.on('mouseover',tip.show)
+	.on('mouseout',tip.hide);
+
+	var legend = svg.selectAll(".legend")
+      .data(color.ticks(7).slice(0).reverse())
+      .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(" + (0) + "," + (120 + i * 20) + ")"; });
+
+  legend.append("rect")
+      .attr("width", 18)
+      .attr("height", 18)
+      .attr("dy", ".80em")
+      .style("fill", color);
+
+  legend.append("text")
+      .attr("x", 26)
+      .attr("y", 10)
+      .attr("dy", ".30em")
+      .text(function(String){
+      	var s = '$';
+      	var str = s + String;
+      	return str;
+      });
+
+
+};
+
+   function colleges(id,sat_scores){
+   	var count = 0;
+   	var target = id;
+   	var college = [];
+   	for(var i = 0;i<sat_scores.length;i++){
+   		var curr = parseInt(sat_scores[i].id);
+   		if(curr == target && count<5){
+   			temp = new Object();
+   			temp.name = sat_scores[i].name;
+   			temp.sat = sat_scores[i].sat_avg;
+   			college.push(temp);
+   			count = count + 1;
+   		}
+   	}
+   	//console.log(college);
+   	var str = "";
+   	for(var i = 0;i<college.length;i++){
+   		str = str + college[i].name + " (SAT: "+college[i].sat+")"+"</br>";
+   	}
+   	return str;
+
+};
+
+</script>
+</body>
+</html>

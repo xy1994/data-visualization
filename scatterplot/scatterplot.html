@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="../lib/d3.v3.min.js"></script>
+<body>
+<h1><center>Distribution vs. Body Mass</center></h1>
+<script>
+
+var str1 = [];
+var str2 = []
+var str3 = [];
+var arr;
+//console.log('123');
+d3.tsv("data.tsv",function(tsvdata){
+				//console.log(tsvdata);
+				var len = tsvdata.length;
+				var lx = [];
+				var ly = [];
+				var dax = [];
+				var day = [];
+				var dix = [];
+				var diy = [];
+				for(var i = 0;i<len;i++){
+					if(tsvdata[i].Species == "Lagomorpha"){
+						var d = tsvdata[i].Distribution*1;
+						var b = tsvdata[i].BodyMass*1;
+						var temp = [b,d];
+						//console.log(temp);
+						str1.push(temp);
+						lx.push(b);
+						ly.push(d);
+					}
+					if(tsvdata[i].Species == "Dasyuromorphia"){
+						var d = tsvdata[i].Distribution*1;
+						var b = tsvdata[i].BodyMass*1;
+						var temp = [b,d];
+						//console.log(temp);
+						str3.push(temp);
+						dax.push(b);
+						day.push(d);											
+					}
+					if(tsvdata[i].Species == "Didelphimorphia"){
+						var d = tsvdata[i].Distribution*1;
+						var b = tsvdata[i].BodyMass*1;
+						var temp = [b,d];
+						//console.log(temp);
+						str2.push(temp);
+						dix.push(b);
+						diy.push(d);
+					}
+
+				}
+
+				var w  = 800;
+				var h  = 500;
+				var padding = 50;
+				var padding1 = 50;
+				//console.log(lx);
+			var xScale = d3.scale.linear().domain([0, Math.max(d3.max(lx),d3.max(dax),d3.max(dix))]).range([padding,w-padding]);
+
+      var yScale = d3.scale.linear().domain([0, Math.max(d3.max(ly),d3.max(day),d3.max(diy))]).range([h-padding1,padding]);
+
+
+
+var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w+120)
+            .attr("height", h);
+
+svg.selectAll("line.horizontalGrid").data(yScale.ticks(4)).enter()
+    .append("line")
+        .attr(
+        {
+            "class":"horizontalGrid",
+            "x1" : padding,
+            "x2" : w-padding,
+            "y1" : function(d){ return yScale(d);},
+            "y2" : function(d){ return yScale(d);},
+            "fill" : "none",
+            "shape-rendering" : "crispEdges",
+            "stroke" : "black",
+            "stroke-width" : "1px",
+            "opacity" : 0.3
+        })
+        .style("stroke-dasharray","5,5");
+
+svg.selectAll("line.vetricalGrid").data(xScale.ticks(4)).enter()
+    .append("line")
+        .attr(
+        {
+            "class":"horizontalGrid",
+            "x1" : function(d){ return xScale(d);},
+            "x2" : function(d){ return xScale(d);},
+            "y1" : h-padding,
+            "y2" : padding,
+            "fill" : "none",
+            "shape-rendering" : "crispEdges",
+            "stroke" : "black",
+            "stroke-width" : "1px",
+            "opacity" : 0.3
+        })
+        .style("stroke-dasharray","5,5");
+
+svg.selectAll("circle")
+   .data(str1)
+   .enter()
+   .append("circle")
+   .attr("cx", function(d) {
+        return xScale(d[0]);
+   })
+   .attr("cy", function(d) {
+        return yScale(d[1]);
+   })
+   .attr("r", 6)
+   .style("fill","white")
+   .style("stroke","red")
+   .style("stroke-width",0.8)
+   .style("opacity",0.8);
+
+
+   svg.selectAll(".point")
+      .data(str3)
+      .enter()
+      .append("path")
+      .attr("class", "point")
+      .attr("d", d3.svg.symbol().type("triangle-up"))
+      .attr("transform", function(d) { return "translate(" + xScale(d[0]) + "," + yScale(d[1]) + ")"; })
+      .style("fill","white")
+      .style("stroke","green")
+      .style("stroke-width",0.8)
+      .style("opacity",0.8);
+
+   svg.selectAll("rect")
+   .data(str2)
+   .enter()
+   .append("rect")
+   .attr("x", function(d) {
+        return xScale(d[0]);
+   })
+   .attr("y", function(d) {
+        return yScale(d[1]);
+   })
+   .attr("width", 12)
+   .attr("height", 12)
+   .style("fill","white")
+   .style("stroke","blue")
+   .style("stroke-width",0.8)
+   .style("opacity",0.8);
+
+
+      var xAxis = d3.svg.axis().scale(xScale).orient('bottom').ticks(10);
+
+    svg.append('g')
+        .attr('class', 'axis')
+        .attr('transform', "translate(0,"+(h-padding1)+")")
+        .call(xAxis);
+
+    var yAxis = d3.svg.axis().scale(yScale).orient('left').ticks(10);
+
+    svg.append('g')
+        .attr('class', 'axis')
+        .attr('transform', "translate("+padding+",0)")
+        .call(yAxis);
+
+    svg.append("text")
+            .attr("text-anchor", "middle")  
+            .attr("transform", "translate("+ (padding/2-10) +","+(h/2)+")rotate(-90)")  
+            .text("Distribution");
+
+    svg.append("text")
+            .attr("text-anchor", "middle")  
+            .attr("transform", "translate("+ (w/2) +","+(h-5)+")")
+            .text("Body Mass");
+
+    svg.append("text")
+            .attr("text-anchor", "middle")  
+            .attr("transform", "translate("+ (w/2) +","+(12)+")")
+            .text("q3(a)");
+
+var legend = svg.append("g")
+  .attr("class", "legend")
+  .attr("x", w + 50)
+  .attr("y", 25)
+  .attr("height", 100)
+  .attr("width", 100);
+   
+ legend.append("circle")
+      .attr("cx", w)
+      .attr("cy", h-padding-50)
+      .attr("r",5)
+      .style("fill","white")
+   	  .style("stroke","red")
+      .style("stroke-width",0.8);
+
+  legend.append("rect")
+  	    .attr("x", w-5)
+  		.attr("y", h-padding-40)
+  		.attr("width", 10)
+  		.attr("height", 10)
+  		.style("fill","white")
+   		.style("stroke","blue")
+   		.style("stroke-width",0.8);
+
+   legend.append("path")
+      .attr("class", "point")
+      .attr("d", d3.svg.symbol().type("triangle-up"))
+      .attr("transform", function(d) { return "translate(" + (w) + "," + (h-padding-20)+ ")"; })
+      .style("fill","white")
+      .style("stroke","green")
+      .style("stroke-width",0.8);
+
+    legend.append("text")
+    .text("Lagomorpha")
+    .attr("x",w+8)
+    .attr("y",h-padding-45);
+
+    legend.append("text")
+    .text("Didelphimorphia")
+    .attr("x",w+8)
+    .attr("y",h-padding-30);
+
+    legend.append("text")
+    .text("Dasyuromorphia")
+    .attr("x",w+8)
+    .attr("y",h-padding-15);
+
+
+
+
+
+
+    			len = tsvdata.length;
+				lx = [];
+				ly = [];
+				dax = [];
+				day = [];
+				dix = [];
+				diy = [];
+				for(var i = 0;i<len;i++){
+					if(tsvdata[i].Species == "Lagomorpha"){
+						var d = Math.log(tsvdata[i].Distribution*1);
+						var b = Math.log(tsvdata[i].BodyMass*1);
+						var temp = [b,d];
+						//console.log(temp);
+						str1.push(temp);
+						lx.push(b);
+						ly.push(d);
+					}
+					if(tsvdata[i].Species == "Dasyuromorphia"){
+						var d = Math.log(tsvdata[i].Distribution*1);
+						var b = Math.log(tsvdata[i].BodyMass*1);
+						var temp = [b,d];
+						//console.log(temp);
+						str3.push(temp);
+						dax.push(b);
+						day.push(d);											
+					}
+					if(tsvdata[i].Species == "Didelphimorphia"){
+						var d = Math.log(tsvdata[i].Distribution*1);
+						var b = Math.log(tsvdata[i].BodyMass*1);
+						var temp = [b,d];
+						//console.log(temp);
+						str2.push(temp);
+						dix.push(b);
+						diy.push(d);
+					}
+
+				}
+
+				w  = 800;
+				h  = 500;
+				padding = 50;
+				padding1 = 50;
+				//console.log(lx);
+			var xScale = d3.scale.linear().domain([0, Math.max(d3.max(lx),d3.max(dax),d3.max(dix))]).range([padding,w-padding]);
+
+            var yScale = d3.scale.linear().domain([0, Math.max(d3.max(ly),d3.max(day),d3.max(diy))]).range([h-padding1,padding]);
+
+var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w+120)
+            .attr("height", h);
+
+svg.selectAll("line.horizontalGrid").data(yScale.ticks(4)).enter()
+    .append("line")
+        .attr(
+        {
+            "class":"horizontalGrid",
+            "x1" : padding,
+            "x2" : w-padding,
+            "y1" : function(d){ return yScale(d);},
+            "y2" : function(d){ return yScale(d);},
+            "fill" : "none",
+            "shape-rendering" : "crispEdges",
+            "stroke" : "black",
+            "stroke-width" : "1px",
+            "opacity" : 0.3
+        })
+        .style("stroke-dasharray","5,5");
+
+svg.selectAll("line.vetricalGrid").data(xScale.ticks(4)).enter()
+    .append("line")
+        .attr(
+        {
+            "class":"horizontalGrid",
+            "x1" : function(d){ return xScale(d);},
+            "x2" : function(d){ return xScale(d);},
+            "y1" : h-padding,
+            "y2" : padding,
+            "fill" : "none",
+            "shape-rendering" : "crispEdges",
+            "stroke" : "black",
+            "stroke-width" : "1px",
+            "opacity" : 0.3
+        })
+        .style("stroke-dasharray","5,5");
+
+svg.selectAll("circle")
+   .data(str1)
+   .enter()
+   .append("circle")
+   .attr("cx", function(d) {
+        return xScale(d[0]);
+   })
+   .attr("cy", function(d) {
+        return yScale(d[1]);
+   })
+   .attr("r", 6)
+   .style("fill","white")
+   .style("stroke","red")
+   .style("stroke-width",0.8)
+   .style("opacity",0.8);
+
+   svg.selectAll(".point")
+      .data(str3)
+      .enter()
+      .append("path")
+      .attr("class", "point")
+      .attr("d", d3.svg.symbol().type("triangle-up"))
+      .attr("transform", function(d) { return "translate(" + xScale(d[0]) + "," + yScale(d[1]) + ")"; })
+      .style("fill","white")
+      .style("stroke","green")
+      .style("stroke-width",0.8)
+      .style("opacity",0.8);
+
+   svg.selectAll("rect")
+   .data(str2)
+   .enter()
+   .append("rect")
+   .attr("x", function(d) {
+        return xScale(d[0]);
+   })
+   .attr("y", function(d) {
+        return yScale(d[1]);
+   })
+   .attr("width", 12)
+   .attr("height", 12)
+   .style("fill","white")
+   .style("stroke","blue")
+   .style("stroke-width",0.8)
+   .style("opacity",0.8);
+
+
+      var xAxis = d3.svg.axis().scale(xScale).orient('bottom').ticks(10);
+
+    svg.append('g')
+        .attr('class', 'axis')
+        .attr('transform', "translate(0,"+(h-padding1)+")")
+        .call(xAxis);
+
+    var yAxis = d3.svg.axis().scale(yScale).orient('left').ticks(10);
+
+    svg.append('g')
+        .attr('class', 'axis')
+        .attr('transform', "translate("+padding+",0)")
+        .call(yAxis);
+
+    svg.append("text")
+            .attr("text-anchor", "middle")  
+            .attr("transform", "translate("+ (padding/2-10) +","+(h/2)+")rotate(-90)")  
+            .text("Distribution");
+
+    svg.append("text")
+            .attr("text-anchor", "middle")  
+            .attr("transform", "translate("+ (w/2) +","+(h-5)+")")
+            .text("Body Mass");
+
+    svg.append("text")
+            .attr("text-anchor", "middle")  
+            .attr("transform", "translate("+ (w/2) +","+(12)+")")
+            .text("q3(c)");
+
+var legend = svg.append("g")
+  .attr("class", "legend")
+  .attr("x", w + 50)
+  .attr("y", 25)
+  .attr("height", 100)
+  .attr("width", 100);
+   
+ legend.append("circle")
+      .attr("cx", w)
+      .attr("cy", h-padding-50)
+      .attr("r",5)
+      .style("fill","white")
+   	  .style("stroke","red")
+      .style("stroke-width",0.8);
+
+  legend.append("rect")
+  	    .attr("x", w-5)
+  		.attr("y", h-padding-40)
+  		.attr("width", 10)
+  		.attr("height", 10)
+  		.style("fill","white")
+   		.style("stroke","blue")
+   		.style("stroke-width",0.8);
+
+   legend.append("path")
+      .attr("class", "point")
+      .attr("d", d3.svg.symbol().type("triangle-up"))
+      .attr("transform", function(d) { return "translate(" + (w) + "," + (h-padding-20)+ ")"; })
+      .style("fill","white")
+      .style("stroke","green")
+      .style("stroke-width",0.8);
+
+    legend.append("text")
+    .text("Lagomorpha")
+    .attr("x",w+8)
+    .attr("y",h-padding-45);
+
+    legend.append("text")
+    .text("Didelphimorphia")
+    .attr("x",w+8)
+    .attr("y",h-padding-30);
+
+    legend.append("text")
+    .text("Dasyuromorphia")
+    .attr("x",w+8)
+    .attr("y",h-padding-15);
+
+
+
+  })
+
+
+
+
+</script>
+</body>
+</html>
+

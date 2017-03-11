@@ -1,0 +1,19 @@
+a.
+
+1. Abbreviate long names to be neat
+
+2. Put white space between lines to avoid crowded statistics
+
+3. Do the zero padding to avoid null statistics
+
+4. Highlight the column titles and change font styles to make a clean layout
+
+5. Remove duplicate year and country names to make the information clear
+
+b.
+
+1. Use horizontal bar to visualize age because it is clear to show the number of all age groups
+
+2. Use pie chart to visualize sex because it is easy to visualize the proportion of sex
+
+3. Use filled map to visualize country because it is intuitive to see distribution of people
